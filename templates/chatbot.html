@@ -8,6 +8,7 @@
 <div id="chatSidebar" class="closed">
   <div id="chatHeader">
     <strong>AI Chatbot</strong>
+    <button id="expandChat" title="Expand Sidebar">⮞</button>
     <span id="closeChat">&times;</span>
   </div>
   <div id="chatMessages"></div>
@@ -21,6 +22,7 @@
   const toggleBtn = document.getElementById('chatToggle');
   const sidebar = document.getElementById('chatSidebar');
   const closeBtn = document.getElementById('closeChat');
+  const expandBtn = document.getElementById('expandChat');
   const input = document.getElementById('chatInput');
   const sendBtn = document.getElementById('sendBtn');
   const messagesDiv = document.getElementById('chatMessages');
@@ -29,6 +31,11 @@
 
   toggleBtn.onclick = () => sidebar.classList.remove('closed');
   closeBtn.onclick = () => sidebar.classList.add('closed');
+
+  expandBtn.onclick = () => {
+    sidebar.classList.toggle('expanded');
+    expandBtn.textContent = sidebar.classList.contains('expanded') ? '⮜' : '⮞';
+  };
 
   function addMessage(role, content) {
     const bubble = document.createElement('div');
@@ -101,8 +108,12 @@
     color: white;
     display: flex;
     flex-direction: column;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, width 0.3s ease;
     z-index: 1000;
+  }
+
+  #chatSidebar.expanded {
+    width: 480px;
   }
 
   #chatSidebar.closed {
@@ -118,6 +129,16 @@
     align-items: center;
   }
 
+  #expandChat {
+    margin-left: auto;
+    margin-right: 10px;
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
   #closeChat {
     cursor: pointer;
     font-size: 20px;
@@ -128,6 +149,7 @@
     flex: 1;
     padding: 15px;
     overflow-y: auto;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   }
 
   .bubble {
@@ -199,4 +221,5 @@
     cursor: pointer;
   }
 </style>
+
 {% endblock %}

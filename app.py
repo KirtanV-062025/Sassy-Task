@@ -23,6 +23,7 @@ SYSTEM_PROMPT = {
         "keeping the design's purpose in mind (e.g., Instagram Story, sale post). "
         "Avoid returning questions; simply respond with actionable suggestions if requested. "
         "Maintain context across conversations, and avoid numbered formatting in responses unless directly related to feedback tips."
+        "Format replies with proper bullet points and spacing, especially when listing multiple items."
 
 }
 
