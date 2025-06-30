@@ -1,0 +1,137 @@
+<!-- 
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calculate</title>
+</head>
+<body>
+    <div class="calculate">
+        <h1>Calculate</h1>
+
+        <form id="calc-form">
+            <input type="text" name="first_number" placeholder="First Number" required />
+            <input type="text" name="second_number" placeholder="Second Number" required />
+            <input type="text" name="operation" placeholder="Operation (add, sub, mul, div)" required />
+
+            <button type="submit" class="btn btn-primary btn-block btn-large">Calculate</button>
+        </form>
+
+        <br>
+        Answer is: <span id="score">--</span>
+        <br>
+    </div>
+
+   <script>
+    // Add an event listener to the form with id="calc-form"
+    // This function runs when the form is submitted
+    document.getElementById("calc-form").addEventListener("submit", function(event) {
+        
+        // Prevent the default form behavior (which would reload the page)
+        event.preventDefault(); 
+
+        // 'form' refers to the form element that was submitted
+        const form = event.target;
+
+        // Collect values from the form inputs and store them in a JavaScript object
+        const data = {
+            first_number: form.first_number.value,   // Get value of input named "first_number"
+            second_number: form.second_number.value, // Get value of input named "second_number"
+            operation: form.operation.value           // Get value of input named "operation"
+        };
+        
+        // Log the data object and form for debugging in browser console
+        // console.log(data);
+        // console.log(form);
+
+        // Send a POST request to the '/calculate' route of your Flask backend
+        fetch('/calculate', {
+            method: 'POST', // HTTP method
+            headers: {
+                'Content-Type': 'application/json' // Tell the server you're sending JSON
+            },
+            body: JSON.stringify(data) // Convert JS object to JSON string for sending
+        })
+
+        // When the response is received, convert it from JSON to a JS object
+        .then(res => res.json())
+
+        // Once the JSON data is parsed, update the page with the result
+        .then(data => {
+            const scoreEl = document.getElementById("score"); // Get the span element to show result
+
+            // If 'answer' exists in the response, display it
+            if (data.answer !== undefined) {
+                scoreEl.textContent = data.answer;
+            } else {
+                // If there was an error, display it
+                scoreEl.textContent = data.error || "Error occurred.";
+            }
+        })
+
+        // Catch any network or parsing errors and show a message
+        .catch(err => {
+            document.getElementById("score").textContent = "Error calculating.";
+            console.error(err); // Print detailed error in console for debugging
+        });
+    });
+</script>
+
+</body>
+</html> -->
+
+{% extends "base.html" %}
+
+{% block title %}Calculator{% endblock %}
+
+{% block content %}
+<div class="calculate">
+    <h1>Calculate</h1>
+
+    <form id="calc-form">
+        <input type="text" name="first_number" placeholder="First Number" required />
+        <input type="text" name="second_number" placeholder="Second Number" required />
+        <input type="text" name="operation" placeholder="Operation (add, sub, mul, div)" required />
+        <button type="submit" class="btn btn-primary btn-block btn-large">Calculate</button>
+    </form>
+
+    <br>
+    Answer is: <span id="score">--</span>
+    <br>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById("calc-form").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const data = {
+        first_number: form.first_number.value,
+        second_number: form.second_number.value,
+        operation: form.operation.value
+    };
+
+    fetch('/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(data => {
+        const scoreEl = document.getElementById("score");
+        if (data.answer !== undefined) {
+            scoreEl.textContent = data.answer;
+        } else {
+            scoreEl.textContent = data.error || "Error occurred.";
+        }
+    })
+    .catch(err => {
+        document.getElementById("score").textContent = "Error calculating.";
+        console.error(err);
+    });
+});
+</script>
+{% endblock %}

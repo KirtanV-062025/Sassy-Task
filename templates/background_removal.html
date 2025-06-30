@@ -1,0 +1,118 @@
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Remove Background with Control</title>
+</head>
+<body>
+    <h1>Upload Image to Remove Background</h1>
+    <form id="upload-form">
+        <input type="file" id="image-input" name="image" accept="image/*" required><br><br>
+
+        <label for="threshold">Background Removal Strength:</label>
+        <input type="range" id="threshold" name="threshold" min="0" max="255" value="128">
+        <span id="threshold-value">128</span><br><br>
+
+        <button type="submit">Remove Background</button>
+    </form>
+
+    <div id="result" style="display: none;">
+        <h2>Result:</h2>
+        <img id="result-image" src="" alt="Result" style="max-width: 400px;"><br><br>
+        <a id="download-link" download="output.png">Download Image</a>
+    </div>
+
+    <script>
+        // Show threshold value as it moves
+        document.getElementById("threshold").addEventListener("input", function() {
+            document.getElementById("threshold-value").textContent = this.value;
+        });
+
+        // Submit the form with Fetch API
+        document.getElementById("upload-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData();
+            const imageInput = document.getElementById("image-input");
+            const threshold = document.getElementById("threshold").value;
+
+            if (!imageInput.files.length) return;
+
+            formData.append("image", imageInput.files[0]);
+            formData.append("threshold", threshold);
+
+            const response = await fetch("/remove-bg", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const imageUrl = URL.createObjectURL(blob);
+                document.getElementById("result-image").src = imageUrl;
+                document.getElementById("download-link").href = imageUrl;
+                document.getElementById("result").style.display = "block";
+            } else {
+                alert("Error removing background.");
+            }
+        });
+    </script>
+</body>
+</html> -->
+
+
+{% extends "base.html" %}
+
+{% block title %}Remove Background{% endblock %}
+
+{% block content %}
+  <h1>Upload Image to Remove Background</h1>
+  <form id="upload-form">
+    <input type="file" id="image-input" name="image" accept="image/*" required><br><br>
+    <label for="threshold">Background Removal Strength:</label>
+    <input type="range" id="threshold" name="threshold" min="0" max="255" value="128">
+    <span id="threshold-value">128</span><br><br>
+    <button type="submit">Remove Background</button>
+  </form>
+
+  <div id="result" style="display: none;">
+    <h2>Result:</h2>
+    <img id="result-image" src="" alt="Result" style="max-width: 400px;"><br><br>
+    <a id="download-link" download="output.png">Download Image</a>
+  </div>
+
+  <script>
+    document.getElementById("threshold").addEventListener("input", function() {
+      document.getElementById("threshold-value").textContent = this.value;
+    });
+
+    document.getElementById("upload-form").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData();
+      const imageInput = document.getElementById("image-input");
+      const threshold = document.getElementById("threshold").value;
+
+      if (!imageInput.files.length) return;
+
+      formData.append("image", imageInput.files[0]);
+      formData.append("threshold", threshold);
+
+      const response = await fetch("/remove-bg", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        document.getElementById("result-image").src = imageUrl;
+        document.getElementById("download-link").href = imageUrl;
+        document.getElementById("result").style.display = "block";
+      } else {
+        alert("Error removing background.");
+      }
+    });
+  </script>
+{% endblock %}

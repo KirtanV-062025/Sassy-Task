@@ -1,0 +1,206 @@
+<!-- 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #130a0a;
+      padding: 20px;
+    }
+    h2{
+      color: #ffffff;
+    }
+    #chatbox {
+      max-width: 600px;
+      margin: auto;
+      background: rgb(0, 0, 0);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      line-height: 1.4;
+    }
+    .user {
+      background: #e6f2ff;
+      text-align: right;
+    }
+    .assistant {
+      background: #eaffea;
+      text-align: left;
+    }
+    .loading {
+      font-style: italic;
+      color: gray;
+    }
+    #inputSection {
+      margin-top: 15px;
+      display: flex;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      margin-left: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="chatbox">
+    <h2>AI Chatbot</h2>
+    <div id="messages"></div>
+    <div id="inputSection">
+      <input type="text" id="userInput" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const messagesDiv = document.getElementById('messages');
+    const userInput = document.getElementById('userInput');
+    const history = [];
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function addMessage(role, htmlContent, loading = false) {
+      const div = document.createElement('div');
+      div.className = `message ${role}` + (loading ? ' loading' : '');
+      div.innerHTML = `<strong>${role === 'user' ? 'You' : 'AI'}:</strong> ${htmlContent}`;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      return div;
+    }
+
+    async function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      addMessage('user', escapeHtml(message));
+      history.push({ role: 'user', content: message });
+      userInput.value = '';
+
+      const loadingMessage = addMessage('assistant', 'Typing...', true);
+
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, history })
+        });
+
+        const data = await res.json();
+        loadingMessage.remove();
+        addMessage('assistant', data.reply);
+        history.push({ role: 'assistant', content: data.reply });
+      } catch {
+        loadingMessage.remove();
+        addMessage('assistant', 'Error: Could not reach server.');
+      }
+    }
+
+    userInput.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html> -->
+
+
+{% extends "base.html" %}
+
+{% block title %}AI Chatbot{% endblock %}
+
+{% block content %}
+  <div id="chatbox">
+    <h2>AI Chatbot</h2>
+    <div id="messages"></div>
+    <div id="inputSection">
+      <input type="text" id="userInput" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const messagesDiv = document.getElementById('messages');
+    const userInput = document.getElementById('userInput');
+    const history = [];
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function addMessage(role, htmlContent, loading = false) {
+      const div = document.createElement('div');
+      div.className = `message ${role}` + (loading ? ' loading' : '');
+      div.innerHTML = `<strong>${role === 'user' ? 'You' : 'AI'}:</strong> ${htmlContent}`;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      return div;
+    }
+
+    async function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      addMessage('user', escapeHtml(message));
+      history.push({ role: 'user', content: message });
+      userInput.value = '';
+
+      const loadingMessage = addMessage('assistant', 'Typing...', true);
+
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, history })
+        });
+
+        const data = await res.json();
+        loadingMessage.remove();
+        addMessage('assistant', data.reply);
+        history.push({ role: 'assistant', content: data.reply });
+      } catch {
+        loadingMessage.remove();
+        addMessage('assistant', 'Error: Could not reach server.');
+      }
+    }
+
+    userInput.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+
+  <style>
+    #chatbox {
+      max-width: 600px;
+      margin: auto;
+      background: #000;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    h2 { color: white; }
+    .message { margin: 10px 0; padding: 10px; border-radius: 5px; }
+    .user { background: #e6f2ff; text-align: right; }
+    .assistant { background: #eaffea; text-align: left; }
+    .loading { font-style: italic; color: gray; }
+    #inputSection { margin-top: 15px; display: flex; }
+    input[type="text"] { flex: 1; padding: 10px; font-size: 16px; }
+    button { padding: 10px 16px; font-size: 16px; margin-left: 5px; }
+  </style>
+{% endblock %}

@@ -1,0 +1,53 @@
+
+
+
+{% extends "base.html" %}
+
+{% block title %}Image Generator{% endblock %}
+
+{% block content %}
+  <h1>Generate an Image from Text</h1>
+  <form id="imageForm">
+    <input type="text" id="prompt" name="prompt" placeholder="Enter your image prompt..." required style="width: 100%; padding: 10px;">
+    <br><br>
+    <button type="submit">Generate Image</button>
+  </form>
+
+  <div id="result" style="margin-top: 20px;"></div>
+
+  <script>
+    document.getElementById("imageForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const prompt = document.getElementById("prompt").value;
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "Generating image...";
+
+      try {
+        const response = await fetch("/image-generator", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ prompt })
+        });
+
+        const data = await response.json();
+
+        if (data.image_url) {
+          resultDiv.innerHTML = `
+            <h2>Generated Image:</h2>
+            <img src="${data.image_url}" alt="Generated Image" style="max-width: 100%; border: 1px solid #ccc; padding: 10px;">
+            <br><br>
+            <a href="${data.image_url}" download="generated_image.png">Download Image</a>
+          `;
+        } else {
+          resultDiv.innerHTML = "Failed to generate image.";
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        resultDiv.innerHTML = "An error occurred while generating the image.";
+      }
+    });
+  </script>
+{% endblock %}
