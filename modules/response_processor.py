@@ -69,9 +69,9 @@ def generate_chat_response(client, system_prompt, user_input, history):
     reply_raw = response.choices[0].message.content.strip()
     finish_reason = response.choices[0].finish_reason
 
-    print("=== RAW REPLY ===")
-    # print(reply_raw)
-    print("Finish Reason:", finish_reason)
+    # print("=== RAW REPLY ===")
+    # # print(reply_raw)
+    # print("Finish Reason:", finish_reason)
 
     # Safely try processing the response
     try:
@@ -88,4 +88,5 @@ def generate_chat_response(client, system_prompt, user_input, history):
         "role": "assistant",
         "finish_reason": finish_reason
     })
+                               
                                

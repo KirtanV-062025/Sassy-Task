@@ -89,7 +89,7 @@ def chat():
     # Shortcut for greetings
     if user_input in ["hi", "hello", "hey"]:
         return jsonify({
-            "reply": "Hello! I'm Pencil AI, here to help you with writing tasks.",
+            "reply": "Hello! I'm AI, here to help you with writing tasks.",
             "role": "assistant",
             "finish_reason": "stop"
         })

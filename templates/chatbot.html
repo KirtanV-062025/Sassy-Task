@@ -1,15 +1,10 @@
-
-
 {% extends "base.html" %}
 {% block title %}AI Chatbot{% endblock %}
 
 {% block content %}
-<!-- Chat toggle button -->
-<div id="chatToggle">
-  💬
-</div>
 
-<!-- Chat sidebar -->
+<div id="chatToggle">💬</div>
+
 <div id="chatSidebar" class="closed">
   <div id="chatHeader">
     <strong>AI Chatbot</strong>
@@ -38,7 +33,13 @@
   function addMessage(role, content) {
     const bubble = document.createElement('div');
     bubble.className = 'bubble ' + role;
-    bubble.innerHTML = content;
+
+    if (role === 'assistant') {
+      bubble.innerHTML = content;
+    } else {
+      bubble.textContent = content;
+    }
+
     messagesDiv.appendChild(bubble);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
@@ -51,7 +52,7 @@
     history.push({ role: 'user', content: message });
     input.value = '';
 
-    addMessage('assistant', 'Typing...', true);
+    addMessage('assistant', 'Typing...');
 
     try {
       const res = await fetch('/chat', {
@@ -134,8 +135,9 @@
     margin-bottom: 12px;
     padding: 10px 14px;
     border-radius: 16px;
-    line-height: 1.4;
+    line-height: 1.5;
     word-wrap: break-word;
+    white-space: normal;
   }
 
   .user {
@@ -150,6 +152,20 @@
     color: #eee;
     align-self: flex-start;
     margin-right: auto;
+  }
+
+  .assistant ul {
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+
+  .assistant li {
+    margin-bottom: 6px;
+  }
+
+  .assistant br {
+    display: block;
+    margin-top: 6px;
   }
 
   #chatInputContainer {
