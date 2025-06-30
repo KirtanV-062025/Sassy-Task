@@ -1,206 +1,186 @@
-<!-- 
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>AI Chatbot</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #130a0a;
-      padding: 20px;
-    }
-    h2{
-      color: #ffffff;
-    }
-    #chatbox {
-      max-width: 600px;
-      margin: auto;
-      background: rgb(0, 0, 0);
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .message {
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 5px;
-      line-height: 1.4;
-    }
-    .user {
-      background: #e6f2ff;
-      text-align: right;
-    }
-    .assistant {
-      background: #eaffea;
-      text-align: left;
-    }
-    .loading {
-      font-style: italic;
-      color: gray;
-    }
-    #inputSection {
-      margin-top: 15px;
-      display: flex;
-    }
-    input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-    }
-    button {
-      padding: 10px 16px;
-      font-size: 16px;
-      margin-left: 5px;
-    }
-  </style>
-</head>
-<body>
-  <div id="chatbox">
-    <h2>AI Chatbot</h2>
-    <div id="messages"></div>
-    <div id="inputSection">
-      <input type="text" id="userInput" placeholder="Type your message..." />
-      <button onclick="sendMessage()">Send</button>
-    </div>
-  </div>
-
-  <script>
-    const messagesDiv = document.getElementById('messages');
-    const userInput = document.getElementById('userInput');
-    const history = [];
-
-    function escapeHtml(str) {
-      return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    }
-
-    function addMessage(role, htmlContent, loading = false) {
-      const div = document.createElement('div');
-      div.className = `message ${role}` + (loading ? ' loading' : '');
-      div.innerHTML = `<strong>${role === 'user' ? 'You' : 'AI'}:</strong> ${htmlContent}`;
-      messagesDiv.appendChild(div);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      return div;
-    }
-
-    async function sendMessage() {
-      const message = userInput.value.trim();
-      if (!message) return;
-
-      addMessage('user', escapeHtml(message));
-      history.push({ role: 'user', content: message });
-      userInput.value = '';
-
-      const loadingMessage = addMessage('assistant', 'Typing...', true);
-
-      try {
-        const res = await fetch('/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message, history })
-        });
-
-        const data = await res.json();
-        loadingMessage.remove();
-        addMessage('assistant', data.reply);
-        history.push({ role: 'assistant', content: data.reply });
-      } catch {
-        loadingMessage.remove();
-        addMessage('assistant', 'Error: Could not reach server.');
-      }
-    }
-
-    userInput.addEventListener("keydown", function(e) {
-      if (e.key === "Enter") sendMessage();
-    });
-  </script>
-</body>
-</html> -->
 
 
 {% extends "base.html" %}
-
 {% block title %}AI Chatbot{% endblock %}
 
 {% block content %}
-  <div id="chatbox">
-    <h2>AI Chatbot</h2>
-    <div id="messages"></div>
-    <div id="inputSection">
-      <input type="text" id="userInput" placeholder="Type your message..." />
-      <button onclick="sendMessage()">Send</button>
-    </div>
+<!-- Chat toggle button -->
+<div id="chatToggle">
+  💬
+</div>
+
+<!-- Chat sidebar -->
+<div id="chatSidebar" class="closed">
+  <div id="chatHeader">
+    <strong>AI Chatbot</strong>
+    <span id="closeChat">&times;</span>
   </div>
+  <div id="chatMessages"></div>
+  <div id="chatInputContainer">
+    <input type="text" id="chatInput" placeholder="Type a message..." />
+    <button id="sendBtn">➤</button>
+  </div>
+</div>
 
-  <script>
-    const messagesDiv = document.getElementById('messages');
-    const userInput = document.getElementById('userInput');
-    const history = [];
+<script>
+  const toggleBtn = document.getElementById('chatToggle');
+  const sidebar = document.getElementById('chatSidebar');
+  const closeBtn = document.getElementById('closeChat');
+  const input = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const messagesDiv = document.getElementById('chatMessages');
 
-    function escapeHtml(str) {
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  let history = [];
+
+  toggleBtn.onclick = () => sidebar.classList.remove('closed');
+  closeBtn.onclick = () => sidebar.classList.add('closed');
+
+  function addMessage(role, content) {
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + role;
+    bubble.innerHTML = content;
+    messagesDiv.appendChild(bubble);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const message = input.value.trim();
+    if (!message) return;
+
+    addMessage('user', message);
+    history.push({ role: 'user', content: message });
+    input.value = '';
+
+    addMessage('assistant', 'Typing...', true);
+
+    try {
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, history })
+      });
+
+      const data = await res.json();
+      messagesDiv.lastChild.remove();
+      addMessage('assistant', data.reply);
+      history.push({ role: 'assistant', content: data.reply });
+    } catch {
+      messagesDiv.lastChild.remove();
+      addMessage('assistant', 'Error: could not reach server.');
     }
+  }
 
-    function addMessage(role, htmlContent, loading = false) {
-      const div = document.createElement('div');
-      div.className = `message ${role}` + (loading ? ' loading' : '');
-      div.innerHTML = `<strong>${role === 'user' ? 'You' : 'AI'}:</strong> ${htmlContent}`;
-      messagesDiv.appendChild(div);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      return div;
-    }
+  sendBtn.onclick = sendMessage;
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendMessage();
+  });
+</script>
 
-    async function sendMessage() {
-      const message = userInput.value.trim();
-      if (!message) return;
+<style>
+  #chatToggle {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #444;
+    color: white;
+    border-radius: 50%;
+    padding: 12px 14px;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 1000;
+  }
 
-      addMessage('user', escapeHtml(message));
-      history.push({ role: 'user', content: message });
-      userInput.value = '';
+  #chatSidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 320px;
+    height: 100%;
+    background: #2c2f36;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
 
-      const loadingMessage = addMessage('assistant', 'Typing...', true);
+  #chatSidebar.closed {
+    transform: translateX(-100%);
+  }
 
-      try {
-        const res = await fetch('/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message, history })
-        });
+  #chatHeader {
+    padding: 15px;
+    font-size: 18px;
+    border-bottom: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-        const data = await res.json();
-        loadingMessage.remove();
-        addMessage('assistant', data.reply);
-        history.push({ role: 'assistant', content: data.reply });
-      } catch {
-        loadingMessage.remove();
-        addMessage('assistant', 'Error: Could not reach server.');
-      }
-    }
+  #closeChat {
+    cursor: pointer;
+    font-size: 20px;
+    color: #aaa;
+  }
 
-    userInput.addEventListener("keydown", function(e) {
-      if (e.key === "Enter") sendMessage();
-    });
-  </script>
+  #chatMessages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+  }
 
-  <style>
-    #chatbox {
-      max-width: 600px;
-      margin: auto;
-      background: #000;
-      padding: 20px;
-      border-radius: 8px;
-    }
-    h2 { color: white; }
-    .message { margin: 10px 0; padding: 10px; border-radius: 5px; }
-    .user { background: #e6f2ff; text-align: right; }
-    .assistant { background: #eaffea; text-align: left; }
-    .loading { font-style: italic; color: gray; }
-    #inputSection { margin-top: 15px; display: flex; }
-    input[type="text"] { flex: 1; padding: 10px; font-size: 16px; }
-    button { padding: 10px 16px; font-size: 16px; margin-left: 5px; }
-  </style>
+  .bubble {
+    max-width: 80%;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border-radius: 16px;
+    line-height: 1.4;
+    word-wrap: break-word;
+  }
+
+  .user {
+    background: #4a90e2;
+    color: white;
+    align-self: flex-end;
+    margin-left: auto;
+  }
+
+  .assistant {
+    background: #3c3f47;
+    color: #eee;
+    align-self: flex-start;
+    margin-right: auto;
+  }
+
+  #chatInputContainer {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #444;
+  }
+
+  #chatInput {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: #1f2229;
+    color: white;
+    border-radius: 10px;
+    font-size: 15px;
+    margin-right: 5px;
+  }
+
+  #chatInput:focus {
+    outline: none;
+  }
+
+  #sendBtn {
+    background: #4a90e2;
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+</style>
 {% endblock %}

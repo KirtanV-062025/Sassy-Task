@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+# print()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = Flask(__name__)
@@ -68,39 +69,87 @@ def remove_bg():
 
 # ------- Chatbot --------------------------------
 
+# @app.route('/chat', methods=['POST'])
+# def chat():
+#     data = request.json
+#     user_input = data.get("message")
+#     history = data.get("history", [])
+
+#     return generate_chat_response(client, SYSTEM_PROMPT, user_input, history)
+
+
+
+
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
-    user_input = data.get("message")
+    user_input = data.get("message", "").strip().lower()
     history = data.get("history", [])
+
+    # Shortcut for greetings
+    if user_input in ["hi", "hello", "hey"]:
+        return jsonify({
+            "reply": "Hello! I'm Pencil AI, here to help you with writing tasks.",
+            "role": "assistant",
+            "finish_reason": "stop"
+        })
 
     return generate_chat_response(client, SYSTEM_PROMPT, user_input, history)
 
 
+# @app.route('/calculate', methods=["GET","POST"])
+# def form():
+#     if request.method=="POST":
+#         data = request.get_json()
+#         first_number = float(data['first_number'])
+#         second_number = float(data['second_number'])
+#         operation = str(data['operation']).lower()
 
-@app.route('/calculate', methods=["GET","POST"])
-def form():
-    if request.method=="POST":
-        data = request.get_json()
-        first_number = float(data['first_number'])
-        second_number = float(data['second_number'])
-        operation = str(data['operation']).lower()
-
-        if operation == 'add':
-            answer = first_number+second_number
-        elif operation == 'sub':
-            answer = first_number-second_number
-        elif operation == 'mul':
-            answer = first_number*second_number
-        elif operation == 'div':
-            if second_number != 0:
-                    answer = first_number / second_number
-            else:
-                return jsonify({'error': 'Cannot divide by zero'}), 400
+#         if operation == 'add':
+#             answer = first_number+second_number
+#         elif operation == 'sub':
+#             answer = first_number-second_number
+#         elif operation == 'mul':
+#             answer = first_number*second_number
+#         elif operation == 'div':
+#             if second_number != 0:
+#                     answer = first_number / second_number
+#             else:
+#                 return jsonify({'error': 'Cannot divide by zero'}), 400
     
-        return {'answer': answer}
-    # else:
-    #     return render_template('calculator.html') 
+#         return jsonify({'answer': answer})
+#     else:
+#         return render_template('calculator.html') 
+
+
+@app.route('/calculate', methods=["GET", "POST"])
+def calculate():
+    if request.method == "POST":
+        try:
+            data = request.get_json()
+            first_number = float(data['first_number'])
+            second_number = float(data['second_number'])
+            operation = data['operation'].strip().lower()
+
+            if operation == 'add':
+                answer = first_number + second_number
+            elif operation == 'sub':
+                answer = first_number - second_number
+            elif operation == 'mul':
+                answer = first_number * second_number
+            elif operation == 'div':
+                if second_number != 0:
+                    answer = first_number / second_number
+                else:
+                    return jsonify({'error': 'Cannot divide by zero'}), 400
+            else:
+                return jsonify({'error': 'Invalid operation'}), 400
+
+            return jsonify({'answer': answer})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    else:
+        return render_template('calculator.html')
 
 
 

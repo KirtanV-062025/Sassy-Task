@@ -5,7 +5,7 @@ def process_ai_response(text, token_limit_reached=False):
     lines = text.strip().split('\n')
     lines = [line for line in lines if not re.match(r'^\s*#{1,6}\s+\S+', line.strip())]
 
-    if lines and re.search(r'(?i)(let me know|feel free|need more)', lines[-1]):
+    if lines and re.search(r'(?i)(let me know|feel free|need more|here are)', lines[-1]):
         lines.pop(-1)
 
     if token_limit_reached:
@@ -29,6 +29,29 @@ def process_ai_response(text, token_limit_reached=False):
 
     return result.replace('\n', '<br>')
 
+# def generate_chat_response(client, system_prompt, user_input, history):
+#     conversation = [system_prompt] + [
+#         {"role": h["role"], "content": h["content"]}
+#         for h in history if h["role"] in ["user", "assistant"]
+#     ]
+#     conversation.append({"role": "user", "content": user_input})
+
+#     response = client.chat.completions.create(
+#         model="gpt-4o-mini",
+#         messages=conversation,
+#         max_tokens=200
+#     )
+
+#     reply_raw = response.choices[0].message.content.strip()
+#     print(reply_raw)
+#     finish_reason = response.choices[0].finish_reason
+#     reply_processed = process_ai_response(reply_raw, token_limit_reached=(finish_reason == "length"))
+
+#     return jsonify({
+#         "reply": reply_processed,
+#         "role": "assistant",
+#         "finish_reason": finish_reason
+#     })
 
 def generate_chat_response(client, system_prompt, user_input, history):
     conversation = [system_prompt] + [
@@ -45,10 +68,24 @@ def generate_chat_response(client, system_prompt, user_input, history):
 
     reply_raw = response.choices[0].message.content.strip()
     finish_reason = response.choices[0].finish_reason
-    reply_processed = process_ai_response(reply_raw, token_limit_reached=(finish_reason == "length"))
+
+    print("=== RAW REPLY ===")
+    # print(reply_raw)
+    print("Finish Reason:", finish_reason)
+
+    # Safely try processing the response
+    try:
+        reply_processed = process_ai_response(reply_raw, token_limit_reached=(finish_reason == "length"))
+        # Fall back to raw if result is empty
+        if not reply_processed.strip():
+            reply_processed = reply_raw
+    except Exception as e:
+        print("Error in process_ai_response:", str(e))
+        reply_processed = reply_raw
 
     return jsonify({
         "reply": reply_processed,
         "role": "assistant",
         "finish_reason": finish_reason
     })
+                               
